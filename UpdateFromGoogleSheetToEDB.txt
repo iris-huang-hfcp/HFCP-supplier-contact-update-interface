@@ -1,0 +1,58 @@
+function UpdateSupplier() {
+  
+  // Buyer's interface is a google sheet. DestinationSheet is where data will be displayed to buyers and for them to update.
+  
+  var DestinationSheet = SpreadsheetApp.openById("1Byrrvtas01MjyTbrsr15tKxcxJ8Yd13s0yfaRL62CkA");
+  var UpdateSupplierInfo = DestinationSheet.getSheetByName("Update Supplier Info");
+  
+  var SupplierName = UpdateSupplierInfo.getRange("D6").getValue();
+  var DistCentre = UpdateSupplierInfo.getRange("G6").getValue();
+  var NewContactName = UpdateSupplierInfo.getRange("D8").getValue();
+  var NewAddress = UpdateSupplierInfo.getRange("G11").getValue();
+  var NewAddressStNo = UpdateSupplierInfo.getRange("D11").getValue();
+  var NewAddressZIP = UpdateSupplierInfo.getRange("D14").getValue();
+  var NewAddressCity = UpdateSupplierInfo.getRange("G14").getValue();
+  var NewAddressProv = UpdateSupplierInfo.getRange("D17").getValue();
+  var NewAddressCountry = UpdateSupplierInfo.getRange("G17").getValue();
+  var NewEmailAddress = UpdateSupplierInfo.getRange("D20").getValue();
+  var NewPhoneNo = UpdateSupplierInfo.getRange("D22").getValue();
+  
+  // Data is being pulled from EDB. Connection needs to be established
+  
+  var connectionName = 'rds-mysql-hfca-skudb.cf3omawxhfdt.ca-central-1.rds.amazonaws.com';
+  var user = 'ermer';
+  var userPwd = 'FarmFresh';
+  var db = 'hfca_procurement';
+  
+  var dbUrl = 'jdbc:mysql://' + connectionName + '/' + db;
+
+  var conn = Jdbc.getConnection(dbUrl, user, userPwd);
+  conn.setAutoCommit(false);
+
+  var start = new Date();
+  var stmt = conn.prepareStatement('UPDATE master_contact_list SET contactPerson = ?, address_number = ?, address_address = ?, address_zip = ?, address_city = ?, address_state = ?, address_country_iso2Code_value = ?, contacts = ?, phone = ? WHERE supplier_name = ? AND dc = ?');
+  
+  // Set the preparedstatement parameters
+  
+  stmt.setString(1, NewContactName);
+  stmt.setInt(2, NewAddressStNo);
+  stmt.setString(3, NewAddress);
+  stmt.setString(4, NewAddressZIP);
+  stmt.setString(5, NewAddressCity);
+  stmt.setString(6, NewAddressProv);
+  stmt.setString(7, NewAddressCountry);
+  stmt.setString(8, NewEmailAddress);
+  stmt.setString(9, NewPhoneNo);
+  stmt.setString(10, SupplierName);
+  stmt.setString(11, DistCentre);
+  
+  // Call executeUpdate to execute our sql update statement
+  
+  stmt.executeUpdate();
+  conn.commit();
+  conn.close();
+  
+  var end = new Date();
+  Logger.log('Time elapsed: %sms.', end - start);
+
+}  
